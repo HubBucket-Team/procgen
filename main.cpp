@@ -23,12 +23,13 @@ int main()
                                        { '+', turn_left  },
                                        { '-', turn_right } };
 
-    Turtle turtle { { 400, 100 }, 0, degree_to_rad(60), 5, lsys, intr };
+    Turtle turtle { { 400, 100 }, degree_to_rad(90), degree_to_rad(60), 3, lsys, intr };
 
-    auto vertices = compute_vertices(turtle, 7);
+    auto vertices = compute_vertices(turtle, 8);
     
     sf::Clock clock;
     DrawManager draw (clock.getElapsedTime(), vertices);
+    draw.rainbowify();
     while (window.isOpen())
     {
             sf::Event event;
@@ -43,7 +44,6 @@ int main()
             }
 
             window.clear();
-            // window.draw(vertices.data(), vertices.size(), sf::LineStrip);
             draw.progressive_draw(window, clock.getElapsedTime());
             window.display();
     }
