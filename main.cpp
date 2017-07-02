@@ -5,6 +5,7 @@
 #include "LSystem.h"
 #include "Turtle.h"
 #include "math.h"
+#include "pretty_draw.h"
 
 using namespace lsys;
 using namespace logo;
@@ -26,6 +27,8 @@ int main()
 
     auto vertices = compute_vertices(turtle, 7);
     
+    sf::Clock clock;
+    DrawManager draw (clock.getElapsedTime(), vertices);
     while (window.isOpen())
     {
             sf::Event event;
@@ -40,7 +43,8 @@ int main()
             }
 
             window.clear();
-            window.draw(vertices.data(), vertices.size(), sf::LineStrip);
+            // window.draw(vertices.data(), vertices.size(), sf::LineStrip);
+            draw.progressive_draw(window, clock.getElapsedTime());
             window.display();
     }
     
