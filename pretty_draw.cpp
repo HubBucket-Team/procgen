@@ -11,7 +11,7 @@ DrawManager::DrawManager(sf::Time beg, const std::vector<sf::Vertex>& vec)
 
 void DrawManager::progressive_draw(sf::RenderTarget& target, sf::Time now) const
 {
-    const int time_step = 5; // In ms
+    const double time_step = 4.5; // In ms
 
     // 1 11  : (11-1)/100   =  0->1
     // 1 250 : (250-1)/100  =  2->3

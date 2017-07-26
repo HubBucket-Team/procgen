@@ -13,7 +13,7 @@ using namespace math;
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1600, 900), "Procgen");
+    sf::RenderWindow window(sf::VideoMode(800, 700), "Procgen");
     window.setVerticalSyncEnabled(true);
     
     LSystem lsys { "F", { { 'F', "G-F-G" }, { 'G', "F+G+F" } } };
@@ -23,29 +23,41 @@ int main()
                                        { '+', turn_left  },
                                        { '-', turn_right } };
 
-    Turtle turtle { { 400, 100 }, degree_to_rad(90), degree_to_rad(60), 3, lsys, intr };
+    Turtle turtle { { 785, 680 }, degree_to_rad(240), degree_to_rad(60), 3, lsys, intr };
 
     auto vertices = compute_vertices(turtle, 8);
     
     sf::Clock clock;
-    DrawManager draw (clock.getElapsedTime(), vertices);
+    auto curr_time = clock.getElapsedTime();
+    DrawManager draw (curr_time, vertices);
     draw.rainbowify();
+    bool wait = true;
     while (window.isOpen())
     {
-            sf::Event event;
-            if (window.pollEvent(event))
-            {
-                    if (event.type == sf::Event::Closed ||
-                        (event.type == sf::Event::KeyPressed &&
-                         event.key.code == sf::Keyboard::Escape))
-                    {
-                            window.close();
-                    }
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed ||
+                (event.type == sf::Event::KeyPressed &&
+                 event.key.code == sf::Keyboard::Escape)) {
+                window.close();
             }
+            else if (event.type == sf::Event::KeyPressed &&
+                     event.key.code == sf::Keyboard::Space &&
+                     wait ) {
+                wait = false;
+            }
+        }
 
+        if (wait) {
+            curr_time = clock.getElapsedTime();
+        }
+        else {
             window.clear();
-            draw.progressive_draw(window, clock.getElapsedTime());
+//            window.draw(vertices.data(), vertices.size(), sf::LineStrip);
+            draw.progressive_draw(window, clock.getElapsedTime() - curr_time);
             window.display();
+        }
     }
     
     return 0;

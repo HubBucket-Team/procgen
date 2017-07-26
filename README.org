@@ -23,6 +23,9 @@
    - *Coding rule:* [[https://github.com/isocpp/CppCoreGuidelines][ISO C++ Core Guidelines]] with GSL
    - *Compilation:* =make=
    - *Testing suite:* [[https://github.com/google/googletest/][googletest]]
+     - TODO: Learn more about testing in general.
+       When looking at =LSystemTest.cpp=, I think all my test except one are for trivial functions. Is it really useful to keep them?
+     - TODO: Integrate =valgrind= or =ASan=
 
 ** Completing the framework?:
    - Formally Licencing
