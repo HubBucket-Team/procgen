@@ -1,3 +1,4 @@
+#include <cmath>
 #include "procgui.h"
 #include "LSystemView.h"
 
@@ -70,6 +71,47 @@ namespace procgui
     }
 
     
+    void rainbowify(std::vector<sf::Vertex>& vertices)
+    {
+        // https://krazydad.com/tutorials/makecolors.php
+        float freq = .005;
+        int j = 0;
+        for (auto& vertex : vertices) {
+            sf::Color col (std::sin(freq*j + 0)*127 + 128,
+                           std::sin(freq*j + 2)*127 + 128,
+                           std::sin(freq*j + 4)*127 + 128);
+            col.a = vertex.color.a;
+            vertex.color = col;
+            ++j;
+        }
+    }
+
+    sf::Color value_between_two_colors(float value, const sf::Color& a, const sf::Color& b)
+    {
+        sf::Color col;
+        col.r = (b.r - a.r) * value + a.r;
+        col.g = (b.g - a.g) * value + a.g;
+        col.b = (b.b - a.b) * value + a.b;
+        return col;
+    }
+
+    sf::Color heat_map(float value, const std::vector<sf::Color>& colors)
+    {
+        // const int NUM_COLORS = 6
+        // const std::array<sf::Color, NUM_COLORS> colors {{ {0,0,255}, {0,255,0}, {255,255,0}, {255,0,0} }}; true rainbow
+        // const std::array<sf::Color, NUM_COLORS> colors {{ {0,0,255}, {155,0,255}, {255,0,255}, {255,255,0}, {255,155,0}, {255,0,0} }};
+        value *= colors.size()-1;
+        int i = std::floor(value);
+        int j = i < colors.size()-1 ? i+1 : i;
+        float frac_between = value - i;
+
+        sf::Color col;
+        col.r = (colors.at(i).r - colors.at(j).r)*frac_between + colors.at(i).r;
+        col.g = (colors.at(i).g - colors.at(j).g)*frac_between + colors.at(i).g;
+        col.b = (colors.at(i).b - colors.at(j).b)*frac_between + colors.at(i).b;
+        return col;
+    }
+    
     void LSystemView::compute_vertices()
     {
         // Invariant respected: cohesion between the vertices and the bounding
@@ -80,8 +122,26 @@ namespace procgui
                                               params_);
         bounding_box_ = geometry::compute_bounding_box(vertices_);
         sub_boxes_ = geometry::compute_sub_boxes(vertices_, MAX_SUB_BOXES);
+        // rainbowify(vertices_);
+        // for (size_t i = 0; i<vertices_.size(); ++i)
+        // {
+        //     // auto col = value_between_two_colors(static_cast<float>(i) / vertices_.size() ,
+        //     //                                     sf::Color::Red, sf::Color::Blue);
+        //     auto col = heat_map(static_cast<float>(i) / vertices_.size(), {sf::Color::Red, sf::Color::Blue, sf::Color::White});
+        //     col.a = vertices_.at(i).color.a;
+        //     vertices_.at(i).color = col;
+        // }
+        float top = bounding_box_.top;
+        float bottom = top + bounding_box_.height;
+        for (auto& v : vertices_)
+        {
+            auto col = heat_map((bottom - v.position.y) / (bottom - top), {sf::Color::Red, sf::Color::Blue// , sf::Color::White
+                        });
+            col.a = v.color.a;
+            v.color = col;
+        }
     }
-    
+
     void LSystemView::draw(sf::RenderTarget &target)
     {
         // Interact with the models and re-compute the vertices if there is a
@@ -116,15 +176,15 @@ namespace procgui
 
         // DEBUG
         // Draw the sub-bounding boxes.
-        for (const auto& box : sub_boxes_)
-        {
-            std::array<sf::Vertex, 5> rect =
-                {{ {{ box.left, box.top}, sf::Color(255,0,0,50)},
-                   {{ box.left, box.top + box.height}, sf::Color(255,0,0,50)},
-                   {{ box.left + box.width, box.top + box.height}, sf::Color(255,0,0,50)},
-                   {{ box.left + box.width, box.top}, sf::Color(255,0,0,50)}}};
-            target.draw(rect.data(), rect.size(), sf::Quads);
-        }
+        // for (const auto& box : sub_boxes_)
+        // {
+        //     std::array<sf::Vertex, 5> rect =
+        //         {{ {{ box.left, box.top}, sf::Color(255,0,0,50)},
+        //            {{ box.left, box.top + box.height}, sf::Color(255,0,0,50)},
+        //            {{ box.left + box.width, box.top + box.height}, sf::Color(255,0,0,50)},
+        //            {{ box.left + box.width, box.top}, sf::Color(255,0,0,50)}}};
+        //     target.draw(rect.data(), rect.size(), sf::Quads);
+        // }
     }
 
     bool LSystemView::select(const sf::Vector2f& click)
